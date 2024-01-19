@@ -1,95 +1,53 @@
-import Image from 'next/image'
-import styles from './page.module.css'
+"use client"
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import moment from 'moment';
+import DatePicker from 'react-datepicker';
+import Picture from '../components/Picture';
+import 'react-datepicker/dist/react-datepicker.css';
+import styles from './page.module.css';
+import './globals.css';
 
-export default function Home() {
+const HomePage = () => {
+  const [apodData, setApodData] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+
+  useEffect(() => {
+    const fetchApodData = async () => {
+      try {
+        const formattedDate = moment(selectedDate).format('YYYY-MM-DD');
+        const response = await axios.get(
+          `https://api.nasa.gov/planetary/apod?api_key=jKwP0sfuFeotwX4h08p9esqb2VfZqsHGNNXSPXIa&date=${formattedDate}`
+        );
+        setApodData(response.data);
+      } catch (error) {
+        console.error('Error fetching APOD data:', error);
+      }
+    };
+
+    fetchApodData();
+  }, [selectedDate]);
+
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.js</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
-
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
+    <div className={styles.container}>
+      <h1 className={styles.main__title}>Astronomy Picture of the Day</h1>
+      <p>Select a date</p>
+      <DatePicker
+        selected={selectedDate}
+        onChange={(date) => setSelectedDate(date)}
+        className={styles.custom__datepicker}
+        dateFormat="yyyy-MM-dd"
+      />
+      {apodData && (
+        <Picture
+          title={apodData.title}
+          date={apodData.date}
+          description={apodData.explanation}
+          url={apodData.url}
         />
-      </div>
+      )}
+    </div>
+  );
+};
 
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  )
-}
+export default HomePage;
